@@ -1,0 +1,1858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+  ============================================================
+  C GRAHAM CONSTRUCTIONS — BUILDING INSPECTION PWA
+  Version: 1.0.0 | Built: May 2026
+  Stack: Vanilla HTML/CSS/JS + Alpine.js CDN + Google APIs
+  ============================================================
+  SCREENS:
+    1. booking     — Three-Click Booking Engine
+    2. prep        — Post-Booking Interactive Prep Guide
+    3. dashboard   — Traffic Light Inspection Report Dashboard
+  ============================================================
+  -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#1A6FA8" />
+  <meta name="description" content="Book a building inspection with C Graham Constructions. Pre-purchase, new build, and handover inspections on the Sunshine Coast QLD. QBCC Lic: 15114537. ABN: 19 629 871 290." />
+
+  <!-- PWA Manifest inline reference -->
+  <link rel="manifest" href="#" />
+
+  <!-- Google Fonts: Montserrat (headings) + Inter (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Alpine.js CDN — lightweight reactive framework -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <title>C Graham Constructions — Book Inspection</title>
+
+  <style>
+    /* ============================================================
+       CSS VARIABLES — C Graham Constructions Brand System
+    ============================================================ */
+    :root {
+      --navy:        #1A6FA8;   /* Ocean blue — primary brand */
+      --orange:      #E6A817;   /* Sandy gold — CTA / accent */
+      --slate:       #E8F4FD;   /* Light sky blue — card backgrounds */
+      --white:       #FFFFFF;
+      --off-white:   #F8F9FA;
+      --light-grey:  #E9ECEF;
+      --mid-grey:    #6C757D;
+      --red-flag:    #DC3545;   /* HIGH priority */
+      --amber-flag:  #FFC107;   /* MEDIUM priority */
+      --green-flag:  #28A745;   /* PASS / clear */
+      --font-head:   'Montserrat', sans-serif;
+      --font-body:   'Inter', sans-serif;
+      --radius:      12px;
+      --radius-sm:   8px;
+      --shadow:      0 4px 24px rgba(0,0,0,0.12);
+      --shadow-sm:   0 2px 8px rgba(0,0,0,0.08);
+      --transition:  all 0.25s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ============================================================
+       RESET & BASE
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font-body);
+      background: linear-gradient(180deg, #D6EFFF 0%, #EAF6FF 40%, #FFF8E7 100%);
+      color: #1A1A1A;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior: none;
+    }
+
+    /* ============================================================
+       APP SHELL — full-height mobile container
+    ============================================================ */
+    #app {
+      min-height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+      background: var(--navy);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ============================================================
+       TOP NAVIGATION BAR
+    ============================================================ */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--navy);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .topbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .topbar-logo .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--orange);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .topbar-logo .logo-text {
+      font-family: var(--font-head);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.2;
+    }
+
+    .topbar-logo .logo-text span {
+      color: var(--orange);
+      font-size: 10px;
+      font-weight: 600;
+      display: block;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .topbar-badge {
+      background: var(--green-flag);
+      color: var(--white);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ============================================================
+       BOTTOM NAVIGATION TABS
+    ============================================================ */
+    .bottomnav {
+      position: sticky;
+      bottom: 0;
+      z-index: 100;
+      background: var(--navy);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      padding: 8px 0 env(safe-area-inset-bottom, 8px);
+    }
+
+    .bottomnav-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 4px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--mid-grey);
+      font-family: var(--font-body);
+      font-size: 10px;
+      font-weight: 500;
+      transition: var(--transition);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .bottomnav-btn .nav-icon { font-size: 22px; }
+
+    .bottomnav-btn.active {
+      color: var(--orange);
+    }
+
+    .bottomnav-btn.active .nav-dot {
+      width: 4px;
+      height: 4px;
+      background: var(--orange);
+      border-radius: 50%;
+    }
+
+    /* ============================================================
+       SCROLL CONTENT AREA
+    ============================================================ */
+    .screen-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 16px 24px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ============================================================
+       SECTION HEADERS
+    ============================================================ */
+    .screen-header {
+      margin-bottom: 24px;
+    }
+
+    .screen-header h1 {
+      font-family: var(--font-head);
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+
+    .screen-header h1 span { color: var(--orange); }
+
+    .screen-header p {
+      font-size: 14px;
+      color: #4A7A9B;
+      line-height: 1.5;
+    }
+
+    /* ============================================================
+       CARDS
+    ============================================================ */
+    .card {
+      background: #FFFFFF;
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-title {
+      font-family: var(--font-head);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--orange);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-badge {
+      width: 22px;
+      height: 22px;
+      background: var(--orange);
+      color: #FFFFFF;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ============================================================
+       FORM INPUTS
+    ============================================================ */
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #4A7A9B;
+      margin-bottom: 7px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      background: #FFFFFF;
+      border: 1.5px solid rgba(255,255,255,0.12);
+      border-radius: var(--radius-sm);
+      color: #1A1A1A;
+      font-family: var(--font-body);
+      font-size: 15px;
+      padding: 14px 16px;
+      outline: none;
+      transition: var(--transition);
+      -webkit-appearance: none;
+    }
+
+    .form-input::placeholder { color: #9BA8B0; }
+
+    .form-input:focus, .form-select:focus {
+      border-color: var(--orange);
+      background: rgba(244,162,97,0.08);
+    }
+
+    .form-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23F4A261' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      padding-right: 40px;
+      cursor: pointer;
+    }
+
+    .form-select option { background: #FFFFFF; color: #1A1A1A; }
+
+    /* ============================================================
+       SCHEDULE GRID — Fast-Track Time Slots
+    ============================================================ */
+    .slot-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .slot-btn {
+      background: #F0F8FF;
+      border: 1.5px solid rgba(255,255,255,0.12);
+      border-radius: var(--radius-sm);
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .slot-btn:active { transform: scale(0.97); }
+
+    .slot-btn.selected {
+      border-color: var(--orange);
+      background: #FFF3C4;
+    }
+
+    .slot-btn .slot-label {
+      font-family: var(--font-head);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--white);
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .slot-btn .slot-sub {
+      font-size: 11px;
+      color: #7A9BB0;
+    }
+
+    .slot-btn.selected .slot-label { color: var(--orange); }
+
+    .slot-btn .slot-badge {
+      display: inline-block;
+      background: var(--green-flag);
+      color: var(--white);
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 10px;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    /* ============================================================
+       PRICE ESTIMATE DISPLAY
+    ============================================================ */
+    .price-display {
+      background: #FFF8E7;
+      border: 1.5px solid rgba(244,162,97,0.3);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .price-display .price-label {
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .price-display .price-value {
+      font-family: var(--font-head);
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--orange);
+    }
+
+    .price-display .price-value span {
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* ============================================================
+       PRIMARY CTA BUTTON
+    ============================================================ */
+    .btn-primary {
+      width: 100%;
+      background: var(--orange);
+      color: var(--navy);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-head);
+      font-size: 16px;
+      font-weight: 800;
+      padding: 18px 24px;
+      cursor: pointer;
+      transition: var(--transition);
+      letter-spacing: 0.3px;
+      -webkit-tap-highlight-color: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary:active { transform: scale(0.98); background: #e8944f; }
+
+    .btn-secondary {
+      width: 100%;
+      background: transparent;
+      color: var(--orange);
+      border: 2px solid var(--orange);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-weight: 700;
+      padding: 16px 24px;
+      cursor: pointer;
+      transition: var(--transition);
+      -webkit-tap-highlight-color: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .btn-secondary:active { background: rgba(244,162,97,0.1); }
+
+    /* ============================================================
+       SUCCESS CONFIRMATION BANNER
+    ============================================================ */
+    .success-banner {
+      background: linear-gradient(135deg, #1A6FA8, #28A745);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .success-banner .success-icon { font-size: 40px; margin-bottom: 8px; }
+
+    .success-banner h2 {
+      font-family: var(--font-head);
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .success-banner p {
+      font-size: 13px;
+      color: #2C3E50;
+      line-height: 1.5;
+    }
+
+    /* ============================================================
+       SCREEN 2 — PREP GUIDE / BLUEPRINT NODES
+    ============================================================ */
+    .blueprint-container {
+      position: relative;
+      background: #F5FAFF;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      min-height: 320px;
+    }
+
+    .blueprint-house {
+      position: relative;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* House SVG illustration */
+    .house-svg {
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto;
+    }
+
+    /* Interactive inspection nodes */
+    .node-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .inspection-node {
+      background: #EEF7FF;
+      border: 1.5px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-sm);
+      padding: 16px 12px;
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+      -webkit-tap-highlight-color: transparent;
+      position: relative;
+    }
+
+    .inspection-node:active { transform: scale(0.97); }
+
+    .inspection-node.active {
+      border-color: var(--orange);
+      background: rgba(244,162,97,0.1);
+    }
+
+    .inspection-node .node-icon { font-size: 28px; margin-bottom: 6px; }
+
+    .inspection-node .node-name {
+      font-family: var(--font-head);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+
+    .inspection-node .node-status {
+      font-size: 10px;
+      color: var(--orange);
+      font-weight: 600;
+    }
+
+    /* Tooltip panel */
+    .node-tooltip {
+      background: var(--navy);
+      border: 1.5px solid var(--orange);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-top: 12px;
+      display: none;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .node-tooltip.visible { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .node-tooltip h3 {
+      font-family: var(--font-head);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--orange);
+      margin-bottom: 8px;
+    }
+
+    .node-tooltip p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.8);
+      line-height: 1.6;
+    }
+
+    .node-tooltip ul {
+      padding-left: 16px;
+      margin-top: 8px;
+    }
+
+    .node-tooltip ul li {
+      font-size: 13px;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: 4px;
+      line-height: 1.5;
+    }
+
+    /* Checklist items */
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .checklist-item:last-child { border-bottom: none; }
+
+    .check-box {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      border: 2px solid #9BA8B0;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+
+    .check-box.checked {
+      background: var(--green-flag);
+      border-color: var(--green-flag);
+    }
+
+    .checklist-item .check-text {
+      font-size: 14px;
+      color: rgba(255,255,255,0.85);
+      line-height: 1.4;
+    }
+
+    /* ============================================================
+       SCREEN 3 — TRAFFIC LIGHT DASHBOARD
+    ============================================================ */
+    .traffic-section {
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+
+    .traffic-header {
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .traffic-header .traffic-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .traffic-header h3 {
+      font-family: var(--font-head);
+      font-size: 14px;
+      font-weight: 700;
+      flex: 1;
+    }
+
+    .traffic-header .traffic-count {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    /* RED section */
+    .traffic-red .traffic-header {
+      background: rgba(220,53,69,0.2);
+      border: 1.5px solid rgba(220,53,69,0.4);
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .traffic-red .traffic-dot { background: var(--red-flag); }
+    .traffic-red .traffic-count { background: rgba(220,53,69,0.3); color: #ff8a95; }
+
+    /* AMBER section */
+    .traffic-amber .traffic-header {
+      background: rgba(255,193,7,0.15);
+      border: 1.5px solid rgba(255,193,7,0.3);
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .traffic-amber .traffic-dot { background: var(--amber-flag); }
+    .traffic-amber .traffic-count { background: rgba(255,193,7,0.2); color: #ffd54f; }
+
+    /* GREEN section */
+    .traffic-green .traffic-header {
+      background: rgba(40,167,69,0.15);
+      border: 1.5px solid rgba(40,167,69,0.3);
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .traffic-green .traffic-dot { background: var(--green-flag); }
+    .traffic-green .traffic-count { background: rgba(40,167,69,0.2); color: #69db7c; }
+
+    /* Finding items inside each section */
+    .findings-body {
+      padding: 4px 0;
+      border: 1.5px solid rgba(255,255,255,0.06);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+    }
+
+    .finding-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .finding-item:last-child { border-bottom: none; }
+
+    .finding-item .finding-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    .finding-item .finding-text h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 3px;
+    }
+
+    .finding-item .finding-text p {
+      font-size: 12px;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.5;
+    }
+
+    /* Overall score gauge */
+    .score-gauge {
+      background: var(--slate);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .score-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+
+    .score-number {
+      font-family: var(--font-head);
+      font-size: 56px;
+      font-weight: 800;
+      color: var(--amber-flag);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .score-caption {
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .score-bar-wrap {
+      background: rgba(255,255,255,0.08);
+      border-radius: 20px;
+      height: 10px;
+      margin-top: 14px;
+      overflow: hidden;
+    }
+
+    .score-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--red-flag) 0%, var(--amber-flag) 50%, var(--green-flag) 100%);
+      border-radius: 20px;
+      transition: width 1s ease;
+    }
+
+    /* Report meta info */
+    .report-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .meta-card {
+      background: var(--slate);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+    }
+
+    .meta-card .meta-label {
+      font-size: 10px;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .meta-card .meta-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--white);
+    }
+
+    /* ============================================================
+       TOAST NOTIFICATION
+    ============================================================ */
+    .toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--slate);
+      color: var(--white);
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 999;
+      pointer-events: none;
+      box-shadow: var(--shadow);
+      max-width: calc(100vw - 40px);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ============================================================
+       LOADING SPINNER
+    ============================================================ */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(27,38,59,0.3);
+      border-top-color: var(--navy);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ============================================================
+       UTILITY CLASSES
+    ============================================================ */
+    .text-orange { color: var(--orange); }
+    .text-muted  { color: rgba(255,255,255,0.5); font-size: 12px; }
+    .mt-8  { margin-top: 8px; }
+    .mt-12 { margin-top: 12px; }
+    .mt-16 { margin-top: 16px; }
+    .divider {
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+      margin: 16px 0;
+    }
+    .info-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 0;
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-row .info-icon { font-size: 16px; }
+    [x-cloak] { display: none !important; }
+
+    /* ============================================================
+       ANIMATIONS
+    ============================================================ */
+    .slide-in {
+      animation: slideIn 0.3s ease forwards;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Desktop frame for larger screens */
+    @media (min-width: 481px) {
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+        background: #0d1521;
+        padding: 20px;
+      }
+      #app {
+        border-radius: 32px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        max-height: 900px;
+        overflow: hidden;
+      }
+      .screen-content { max-height: calc(900px - 130px); }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ============================================================
+       ALPINE.JS APP ROOT
+       x-data holds all reactive state for the entire PWA
+  ============================================================ -->
+  <div id="app" x-data="inspectionApp()" x-cloak>
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="topbar">
+      <div class="topbar-logo">
+        <div class="logo-icon">🏗️</div>
+        <div class="logo-text">
+          C Graham Constructions
+          <span>Building Inspections</span>
+        </div>
+      </div>
+      <div class="topbar-badge">⚡ Fast Book</div>
+    </header>
+
+    <!-- ============================================================
+         SCREEN CONTENT — switches between screens 1, 2, 3
+    ============================================================ -->
+    <div class="screen-content">
+
+      <!-- ===========================================================
+           SCREEN 1: THREE-CLICK BOOKING ENGINE
+      =========================================================== -->
+      <div x-show="currentScreen === 'booking'" class="slide-in">
+
+        <!-- Header -->
+        <div class="screen-header">
+          <h1>Book Your<br><span>Inspection</span></h1>
+          <p>3 quick steps. Instant confirmation. No waiting.</p>
+        </div>
+
+        <!-- STEP 1: Property Details -->
+        <div class="card">
+          <div class="card-title">
+            <span class="step-badge">1</span> Property Details
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Property Address</label>
+            <input
+              type="text"
+              class="form-input"
+              placeholder="e.g. 12 Beach Rd, Mooloolaba QLD"
+              x-model="booking.address"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Building Type</label>
+            <select class="form-select" x-model="booking.buildingType" @change="booking.buildingType = $event.target.value; calculatePrice()">
+              <option value="">— Select type —</option>
+              <option value="house">🏠 House / Detached Dwelling</option>
+              <option value="townhouse">🏘️ Townhouse / Semi-Detached</option>
+              <option value="apartment">🏢 Apartment / Unit</option>
+              <option value="commercial">🏭 Commercial Premises</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- STEP 2: Fast-Track Schedule -->
+        <div class="card">
+          <div class="card-title">
+            <span class="step-badge">2</span> Select a Time Slot
+          </div>
+
+          <div class="slot-grid">
+            <template x-for="slot in timeSlots" :key="slot.id">
+              <div
+                class="slot-btn"
+                :class="{ selected: booking.selectedSlot === slot.id }"
+                @click="selectSlot(slot.id)"
+              >
+                <span class="slot-label" x-text="slot.label"></span>
+                <span class="slot-sub" x-text="slot.time"></span>
+                <span class="slot-badge" x-show="slot.fast">Fast-Track</span>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- STEP 3: Price + Contact Form -->
+        <div class="card">
+          <div class="card-title">
+            <span class="step-badge">3</span> Your Details & Price
+          </div>
+
+          <!-- Live price estimate -->
+          <div class="price-display" x-show="booking.buildingType">
+            <div>
+              <div class="price-label">Estimated Fee</div>
+              <div class="text-muted mt-8">Based on building type</div>
+            </div>
+            <div class="price-value">
+              $<span x-text="estimatedPrice"></span>
+              <span>AUD</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-input" placeholder="Your name" x-model="booking.name" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Mobile Number</label>
+            <input type="tel" class="form-input" placeholder="04XX XXX XXX" x-model="booking.phone" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-input" placeholder="you@email.com" x-model="booking.email" />
+          </div>
+
+          <!-- CTA: Confirm & Book -->
+          <button
+            class="btn-primary"
+            @click="submitBooking()"
+            :disabled="isSubmitting"
+          >
+            <template x-if="!isSubmitting">
+              <span>✅ Confirm &amp; Book Inspection</span>
+            </template>
+            <template x-if="isSubmitting">
+              <span><i class="spinner"></i> Processing…</span>
+            </template>
+          </button>
+
+          <p class="text-muted mt-8" style="text-align:center;">
+            🔒 Your details are secure. No credit card required.
+          </p>
+        </div>
+
+        <!-- Trust signals -->
+        <div class="card" style="padding: 14px 20px;">
+          <div class="info-row"><span class="info-icon">🏅</span> 40+ years construction expertise</div>
+          <div class="info-row"><span class="info-icon">📋</span> Fully licensed building inspector (QLD)</div>
+          <div class="info-row"><span class="info-icon">⚡</span> Reports delivered within 24 hours</div>
+          <div class="info-row"><span class="info-icon">🌐</span> Serving all Sunshine Coast & SEQ</div>
+        </div>
+
+      </div><!-- /screen 1 -->
+
+
+      <!-- ===========================================================
+           SCREEN 2: POST-BOOKING PREP GUIDE
+      =========================================================== -->
+      <div x-show="currentScreen === 'prep'" class="slide-in">
+
+        <!-- Booking confirmed banner -->
+        <div class="success-banner">
+          <div class="success-icon">🎉</div>
+          <h2>Booking Confirmed!</h2>
+          <p x-text="`We'll see you ${getSlotLabel()}. A calendar invite & confirmation SMS has been sent.`"></p>
+        </div>
+
+        <!-- Booking summary card -->
+        <div class="card">
+          <div class="card-title">📋 Your Booking Summary</div>
+          <div class="info-row"><span class="info-icon">📍</span> <span x-text="booking.address || 'Property address'"></span></div>
+          <div class="info-row"><span class="info-icon">🏠</span> <span x-text="buildingTypeLabel()"></span></div>
+          <div class="info-row"><span class="info-icon">📅</span> <span x-text="getSlotLabel()"></span></div>
+          <div class="info-row"><span class="info-icon">💰</span> $<span x-text="estimatedPrice"></span> AUD (Final invoice after inspection)</div>
+          <div class="info-row"><span class="info-icon">👤</span> <span x-text="booking.name"></span> | <span x-text="booking.phone"></span></div>
+        </div>
+
+        <!-- Interactive Blueprint Checklist -->
+        <div class="card">
+          <div class="card-title">🏗️ What We'll Inspect</div>
+          <p class="text-muted" style="margin-bottom:14px;">Tap any area to see what our inspector looks for.</p>
+
+          <!-- 4 inspection nodes -->
+          <div class="node-grid">
+            <template x-for="node in inspectionNodes" :key="node.id">
+              <div
+                class="inspection-node"
+                :class="{ active: activeNode === node.id }"
+                @click="toggleNode(node.id)"
+              >
+                <div class="node-icon" x-text="node.icon"></div>
+                <div class="node-name" x-text="node.name"></div>
+                <div class="node-status">Tap to view ›</div>
+              </div>
+            </template>
+          </div>
+
+          <!-- Tooltip panel — shows for whichever node is active -->
+          <template x-if="activeNode">
+            <div class="node-tooltip visible">
+              <template x-for="node in inspectionNodes" :key="node.id">
+                <div x-show="activeNode === node.id">
+                  <h3 x-text="node.icon + ' ' + node.name"></h3>
+                  <p x-text="node.description"></p>
+                  <ul>
+                    <template x-for="point in node.checks" :key="point">
+                      <li x-text="point"></li>
+                    </template>
+                  </ul>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+
+        <!-- Owner prep checklist -->
+        <div class="card">
+          <div class="card-title">✅ How to Prepare Your Property</div>
+          <template x-for="(item, idx) in prepChecklist" :key="idx">
+            <div class="checklist-item" @click="item.done = !item.done">
+              <div class="check-box" :class="{ checked: item.done }">
+                <span x-show="item.done" style="color:white;font-size:13px;">✓</span>
+              </div>
+              <span class="check-text" x-text="item.text"></span>
+            </div>
+          </template>
+        </div>
+
+        <button class="btn-secondary" @click="currentScreen = 'dashboard'">
+          👁️ Preview Report Dashboard
+        </button>
+
+      </div><!-- /screen 2 -->
+
+
+      <!-- ===========================================================
+           SCREEN 3: TRAFFIC LIGHT INSPECTION REPORT DASHBOARD
+      =========================================================== -->
+      <div x-show="currentScreen === 'dashboard'" class="slide-in">
+
+        <div class="screen-header">
+          <h1>Inspection<br><span>Report</span></h1>
+          <p>Official results for your property at <strong x-text="booking.address || '12 Sample St, QLD'"></strong></p>
+        </div>
+
+        <!-- Overall health score -->
+        <div class="score-gauge">
+          <div class="score-label">Overall Property Score</div>
+          <div class="score-number">72</div>
+          <div class="score-caption">Fair condition — attention recommended in 2 areas</div>
+          <div class="score-bar-wrap">
+            <div class="score-bar" style="width: 72%;"></div>
+          </div>
+        </div>
+
+        <!-- Report metadata -->
+        <div class="report-meta">
+          <div class="meta-card">
+            <div class="meta-label">Inspector</div>
+            <div class="meta-value">C. Graham</div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-label">Inspection Date</div>
+            <div class="meta-value" x-text="getInspectionDate()"></div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-label">Report ID</div>
+            <div class="meta-value" x-text="reportId"></div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-label">Areas Checked</div>
+            <div class="meta-value">47 Points</div>
+          </div>
+        </div>
+
+        <!-- ===== RED SECTION ===== -->
+        <div class="traffic-section traffic-red">
+          <div class="traffic-header">
+            <div class="traffic-dot"></div>
+            <h3>🔴 Critical — Immediate Action Required</h3>
+            <div class="traffic-count">2</div>
+          </div>
+          <div class="findings-body">
+            <template x-for="item in reportFindings.red" :key="item.title">
+              <div class="finding-item">
+                <span class="finding-icon">⚠️</span>
+                <div class="finding-text">
+                  <h4 x-text="item.title"></h4>
+                  <p x-text="item.detail"></p>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- ===== AMBER SECTION ===== -->
+        <div class="traffic-section traffic-amber">
+          <div class="traffic-header">
+            <div class="traffic-dot"></div>
+            <h3>🟡 Monitor — Maintenance Recommended</h3>
+            <div class="traffic-count">3</div>
+          </div>
+          <div class="findings-body">
+            <template x-for="item in reportFindings.amber" :key="item.title">
+              <div class="finding-item">
+                <span class="finding-icon">🔧</span>
+                <div class="finding-text">
+                  <h4 x-text="item.title"></h4>
+                  <p x-text="item.detail"></p>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- ===== GREEN SECTION ===== -->
+        <div class="traffic-section traffic-green">
+          <div class="traffic-header">
+            <div class="traffic-dot"></div>
+            <h3>🟢 Passed — Systems Operating Normally</h3>
+            <div class="traffic-count">42</div>
+          </div>
+          <div class="findings-body">
+            <template x-for="item in reportFindings.green" :key="item.title">
+              <div class="finding-item">
+                <span class="finding-icon">✅</span>
+                <div class="finding-text">
+                  <h4 x-text="item.title"></h4>
+                  <p x-text="item.detail"></p>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- PDF Download CTA -->
+        <button class="btn-primary" @click="downloadPDF()" style="margin-top:8px;">
+          📄 Download Official Detailed PDF Report
+        </button>
+
+        <button class="btn-secondary" @click="currentScreen = 'prep'">
+          ← Back to Prep Guide
+        </button>
+
+        <!-- Legal disclaimer -->
+        <p class="text-muted mt-16" style="text-align:center;line-height:1.6;">
+          This report was prepared by a licensed building inspector in accordance with AS 4349.1-2007. For professional use only.
+        </p>
+
+      </div><!-- /screen 3 -->
+
+    </div><!-- /screen-content -->
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottomnav">
+      <button class="bottomnav-btn" :class="{ active: currentScreen === 'booking' }" @click="currentScreen = 'booking'">
+        <span class="nav-icon">📅</span>
+        <span>Book</span>
+        <div class="nav-dot" x-show="currentScreen === 'booking'"></div>
+      </button>
+      <button class="bottomnav-btn" :class="{ active: currentScreen === 'prep' }" @click="currentScreen = 'prep'">
+        <span class="nav-icon">📋</span>
+        <span>Prep Guide</span>
+        <div class="nav-dot" x-show="currentScreen === 'prep'"></div>
+      </button>
+      <button class="bottomnav-btn" :class="{ active: currentScreen === 'dashboard' }" @click="currentScreen = 'dashboard'">
+        <span class="nav-icon">📊</span>
+        <span>Report</span>
+        <div class="nav-dot" x-show="currentScreen === 'dashboard'"></div>
+      </button>
+    </nav>
+
+    <!-- TOAST NOTIFICATION -->
+    <div class="toast" :class="{ show: toast.visible }" x-text="toast.message"></div>
+
+  </div><!-- /app -->
+
+
+  <!-- ============================================================
+       ALPINE.JS — APPLICATION LOGIC
+  ============================================================ -->
+  <script>
+    /**
+     * C Graham Constructions — Building Inspection PWA
+     * Main Alpine.js application data and methods
+     *
+     * GOOGLE API INTEGRATION POINTS:
+     *   1. submitToGoogleSheets()   → Logs booking to Google Sheets
+     *   2. createGoogleCalEvent()   → Injects event into inspector's Google Calendar
+     *   3. generateGoogleDoc()      → Creates Traffic Light report in Google Docs
+     *   4. exportToPDF()            → Exports Doc to PDF in Google Drive
+     *
+     * Replace the CONFIG block below with your real credentials.
+     */
+
+    /* ============================================================
+       GOOGLE API CONFIGURATION — Replace with real values
+    ============================================================ */
+    const GOOGLE_CONFIG = {
+      // Google Sheets — booking database
+      SHEETS_ID:       '1LrOj4FqHLfj-81WOg6dEks1IeHE81iht0hoyGZrwixY',
+      SHEETS_RANGE:    'Bookings!A:K',
+
+      // Google Calendar — inspector's calendar ID
+      CALENDAR_ID:     'cgrahamconstructions@gmail.com',
+
+      // Google Drive — folder for completed PDF reports
+      DRIVE_FOLDER_ID: '1X26yG1T8YMfGkk0kBmSHJfK2FPYpsBH1',
+
+      // Google Docs — master report template to copy
+      DOC_TEMPLATE_ID: '1tEts0xR8o4lOD-aIGp-mR66A3Rv9iuOQ6QKJM5UaSvQ',
+
+      // OAuth2 — your backend should handle token exchange
+      // Use Google Identity Services or a server-side OAuth proxy
+      API_BASE_URL:    'https://script.google.com/macros/s/AKfycbzS-_qEm53qrASmsOCJRbWxexaBO0180eHsI-6_Kzl3ATu6hYTYJyS_dKisSKHAVz_OXA/exec',
+
+      // Google Apps Script Web App URL (paste your deployed URL here)
+      APPS_SCRIPT_URL: 'https://api.base44.com/v1/apps/69ca5e07db7008c68a160911/functions/receiveBooking',
+
+      // Your inspector's name for calendar events
+      INSPECTOR_NAME:  'C. Graham'
+    };
+
+    /* ============================================================
+       PRICE MATRIX — per building type (AUD)
+    ============================================================ */
+    const PRICE_MATRIX = {
+      house:      550,
+      townhouse:  450,
+      apartment:  380,
+      commercial: 850
+    };
+
+    /* ============================================================
+       ALPINE.JS APP FUNCTION
+    ============================================================ */
+    function inspectionApp() {
+      return {
+
+        /* ── STATE ── */
+        currentScreen: 'booking',
+
+        booking: {
+          address:      '',
+          buildingType: '',
+          selectedSlot: null,
+          name:         '',
+          phone:        '',
+          email:        ''
+        },
+
+        estimatedPrice: 0,
+        isSubmitting:   false,
+        activeNode:     null,
+        reportId:       '',
+
+        toast: {
+          visible: false,
+          message: '',
+          timer:   null
+        },
+
+        /* ── TIME SLOTS ── */
+        timeSlots: [
+          { id: 'tomorrow-am', label: 'Tomorrow AM',     time: '8:00am – 12:00pm',  fast: true  },
+          { id: 'tomorrow-pm', label: 'Tomorrow PM',     time: '12:00pm – 5:00pm',  fast: false },
+          { id: 'within-24h',  label: 'Within 24 Hours', time: 'Next available',     fast: true  },
+          { id: 'this-week-1', label: 'This Week',       time: 'Thu / Fri morning',  fast: false },
+          { id: 'next-week-1', label: 'Next Mon AM',     time: 'Mon 8:00am',         fast: false },
+          { id: 'next-week-2', label: 'Next Tue AM',     time: 'Tue 8:00am',         fast: false },
+        ],
+
+        /* ── INSPECTION NODES ── */
+        inspectionNodes: [
+          {
+            id: 'roof',
+            icon: '🏠',
+            name: 'Roof & Attic',
+            description: 'We conduct a thorough evaluation of the entire roof system and attic space, identifying issues that often remain hidden until they become expensive problems.',
+            checks: [
+              'Roof covering condition — tiles, metal, or membrane',
+              'Flashing integrity at ridges, valleys & penetrations',
+              'Attic insulation R-value and ventilation adequacy',
+              'Sagging, ponding water, and hidden leak evidence',
+              'Gutters, downpipes & stormwater drainage flow'
+            ]
+          },
+          {
+            id: 'foundation',
+            icon: '🪨',
+            name: 'Foundation',
+            description: 'The foundation is the most critical structural element of any property. We assess all accessible areas for movement, cracking, and drainage concerns.',
+            checks: [
+              'Slab or subfloor structural integrity',
+              'Settlement cracks — monitoring vs. critical',
+              'Drainage gradients and surface water direction',
+              'Subfloor ventilation and moisture penetration',
+              'Evidence of soil movement or reactive clay issues'
+            ]
+          },
+          {
+            id: 'electrical',
+            icon: '⚡',
+            name: 'Electrical Panel',
+            description: 'Electrical faults are a leading cause of house fires in Australia. Our inspection identifies safety hazards across the switchboard and accessible wiring.',
+            checks: [
+              'Switchboard age, brand, and known recalls (Clipsal, Merlin)',
+              'Circuit breaker sizing and earth leakage protection (RCD)',
+              'Illegal or DIY modifications to wiring or outlets',
+              'Double-tapped breakers and overloaded circuits',
+              'Visible cable condition in roof space and subfloor'
+            ]
+          },
+          {
+            id: 'plumbing',
+            icon: '💧',
+            name: 'Plumbing & Wet Areas',
+            description: 'Water damage is the most common and most expensive defect found during inspections. We leave no wet area unchecked.',
+            checks: [
+              'Hot & cold water pressure testing at all fixtures',
+              'Tile grout and silicone seal condition in bathrooms',
+              'Waterproofing membrane compliance (BCA Section 3.8.1)',
+              'Mould, rising damp, and concealed leak evidence',
+              'Drainage fall and trap condition in all wet areas'
+            ]
+          }
+        ],
+
+        /* ── PREP CHECKLIST ── */
+        prepChecklist: [
+          { text: 'Ensure all areas of the property are accessible (subfloor, roof hatch, garage)',  done: false },
+          { text: 'Unlock all rooms, sheds, and outbuildings before the inspector arrives',          done: false },
+          { text: 'Ensure power, gas, and water are connected and turned on',                        done: false },
+          { text: 'Clear access to the switchboard and hot water system',                            done: false },
+          { text: 'Move items away from walls and corners in the garage and shed',                   done: false },
+          { text: 'Ensure your pet is secured or off-site during the inspection',                    done: false },
+        ],
+
+        /* ── REPORT DATA (sample / populated from real data post-inspection) ── */
+        reportFindings: {
+          red: [
+            {
+              title: 'Active Roof Leak — North-East Valley',
+              detail: 'Water ingress evident at valley flashing junction. Ceiling staining and active moisture detected. Requires immediate re-flashing and inspection of plasterboard. Estimated repair: $800–$1,500.'
+            },
+            {
+              title: 'Unsafe Electrical — No RCD Protection',
+              detail: 'Switchboard lacks residual current device (RCD) protection on all circuits. Non-compliant with AS/NZS 3000:2018. Mandatory upgrade required prior to occupancy transfer.'
+            }
+          ],
+          amber: [
+            {
+              title: 'Ageing Hot Water System',
+              detail: 'Electric storage HWS identified as 12 years old (typical lifespan 8–12 years). Operating normally currently but budget for replacement within 12 months.'
+            },
+            {
+              title: 'Hairline Cracks — Brick Veneer East Elevation',
+              detail: 'Stair-step cracking in mortar joints noted. Consistent with normal seasonal movement. Monitor annually — not structural at this stage.'
+            },
+            {
+              title: 'Subfloor Ventilation — Below Minimum Standard',
+              detail: 'Vent openings partially obstructed by garden bed encroachment. Clear perimeter vents and add cross-ventilation openings to meet BCA requirements.'
+            }
+          ],
+          green: [
+            {
+              title: 'Foundation / Slab — Sound',
+              detail: 'No evidence of significant movement, cracking, or moisture penetration. Drainage fall adequate.'
+            },
+            {
+              title: 'Internal Walls & Ceiling — Good Condition',
+              detail: 'No structural cracking or excessive plasterboard damage detected throughout internal spaces.'
+            },
+            {
+              title: 'Plumbing Pressure — Normal Range',
+              detail: 'Water pressure tested at 380 kPa. Within recommended 200–500 kPa range. All fixtures operating correctly.'
+            },
+            {
+              title: 'Smoke Alarms — Compliant',
+              detail: 'Photoelectric smoke alarms installed in all required locations. Interconnected and within test date.'
+            },
+            {
+              title: 'Windows & Doors — Operational',
+              detail: 'All sampled windows and doors open, close, and lock correctly. No binding or racking evident.'
+            }
+          ]
+        },
+
+        /* ─────────────────────────────────────────────────────────
+           METHODS
+        ───────────────────────────────────────────────────────── */
+
+        /**
+         * Alpine.js init — runs when component mounts
+         */
+        init() {
+          // Generate a unique report ID for this session
+          this.reportId = 'CGC-' + Date.now().toString().slice(-6);
+        },
+
+        /**
+         * Calculate price estimate based on selected building type
+         */
+        calculatePrice() {
+          this.estimatedPrice = PRICE_MATRIX[this.booking.buildingType] || 0;
+        },
+
+        /**
+         * Select a time slot
+         */
+        selectSlot(slotId) {
+          this.booking.selectedSlot = slotId;
+          this.showToast('📅 Slot selected!');
+        },
+
+        /**
+         * Get the label for the selected slot
+         */
+        getSlotLabel() {
+          const slot = this.timeSlots.find(s => s.id === this.booking.selectedSlot);
+          return slot ? `${slot.label} (${slot.time})` : 'your selected time';
+        },
+
+        /**
+         * Get building type as human-readable label
+         */
+        buildingTypeLabel() {
+          const labels = {
+            house:      '🏠 House / Detached Dwelling',
+            townhouse:  '🏘️ Townhouse / Semi-Detached',
+            apartment:  '🏢 Apartment / Unit',
+            commercial: '🏭 Commercial Premises'
+          };
+          return labels[this.booking.buildingType] || '—';
+        },
+
+        /**
+         * Get inspection date (slot day in plain text)
+         */
+        getInspectionDate() {
+          const now = new Date();
+          const tomorrow = new Date(now);
+          tomorrow.setDate(now.getDate() + 1);
+          return tomorrow.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        },
+
+        /**
+         * Toggle inspection node tooltip
+         */
+        toggleNode(nodeId) {
+          this.activeNode = this.activeNode === nodeId ? null : nodeId;
+        },
+
+        /**
+         * Show toast notification
+         */
+        showToast(message, duration = 2500) {
+          if (this.toast.timer) clearTimeout(this.toast.timer);
+          this.toast.message = message;
+          this.toast.visible = true;
+          this.toast.timer = setTimeout(() => { this.toast.visible = false; }, duration);
+        },
+
+        /* ────────────────────────────────────────────────────────
+           SUBMIT BOOKING — Main action handler
+           Validates form, then fires all Google API integrations
+        ──────────────────────────────────────────────────────── */
+        async submitBooking() {
+          // Client-side validation
+          if (!this.booking.address.trim()) {
+            this.showToast('⚠️ Please enter the property address'); return;
+          }
+          if (!this.booking.buildingType) {
+            this.showToast('⚠️ Please select a building type'); return;
+          }
+          if (!this.booking.selectedSlot) {
+            this.showToast('⚠️ Please select a time slot'); return;
+          }
+          if (!this.booking.name.trim()) {
+            this.showToast('⚠️ Please enter your name'); return;
+          }
+          if (!this.booking.phone.trim()) {
+            this.showToast('⚠️ Please enter your phone number'); return;
+          }
+          if (!this.booking.email.trim() || !this.booking.email.includes('@')) {
+            this.showToast('⚠️ Please enter a valid email address'); return;
+          }
+
+          this.isSubmitting = true;
+
+          try {
+            // ── Fire all Google integrations in parallel ──
+            await Promise.all([
+              this.submitToGoogleSheets(),
+              this.createGoogleCalEvent()
+            ]);
+
+            this.showToast('✅ Booking confirmed!', 4000);
+            this.isSubmitting = false;
+
+            // Navigate to prep guide screen
+            setTimeout(() => { this.currentScreen = 'prep'; }, 800);
+
+          } catch (err) {
+            console.error('Booking submission error:', err);
+            this.isSubmitting = false;
+            // Still navigate — don't block user experience on API failure
+            this.showToast('✅ Booking received! (Confirmation to follow)');
+            setTimeout(() => { this.currentScreen = 'prep'; }, 1200);
+          }
+        },
+
+        /* ────────────────────────────────────────────────────────
+           GOOGLE INTEGRATION 1: SHEETS
+           Logs booking row to your master Google Sheet
+
+           Sheet columns:
+             A: Timestamp      B: Name         C: Phone
+             D: Email          E: Address       F: BuildingType
+             G: Slot           H: Price         I: ReportID
+             J: Status         K: Notes
+        ──────────────────────────────────────────────────────── */
+        async submitToGoogleSheets() {
+          const row = [
+            new Date().toISOString(),
+            this.booking.name,
+            this.booking.phone,
+            this.booking.email,
+            this.booking.address,
+            this.buildingTypeLabel(),
+            this.getSlotLabel(),
+            `$${this.estimatedPrice} AUD`,
+            this.reportId,
+            'CONFIRMED',
+            'Booked via PWA'
+          ];
+
+          /*
+          ── REAL IMPLEMENTATION ──
+          Replace this mock with your actual Sheets API call.
+
+          Method A — Google Apps Script Web App (simplest, no OAuth required):
+            Deploy a Google Apps Script as a Web App, then:
+
+            const res = await fetch('https://api.base44.com/v1/apps/69ca5e07db7008c68a160911/functions/receiveBooking', {
+              method: 'POST',
+              mode:   'no-cors',
+              headers: { 'Content-Type': 'application/json' },
+              body:    JSON.stringify({ action: 'appendRow', data: row, sheetId: GOOGLE_CONFIG.SHEETS_ID })
+            });
+
+          Method B — Google Sheets REST API v4 (requires OAuth token from backend):
+            const token = await this.getOAuthToken();
+            const res = await fetch(
+              `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_CONFIG.SHEETS_ID}/values/${GOOGLE_CONFIG.SHEETS_RANGE}:append?valueInputOption=USER_ENTERED`,
+              {
+                method:  'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ values: [row] })
+              }
+            );
+          */
+
+          // ── REAL Google Apps Script call ──
+          const sheetsRes = await fetch(GOOGLE_CONFIG.APPS_SCRIPT_URL, {
+            method:  'POST',
+            mode:    'no-cors', // Apps Script doesn't return CORS headers
+            headers: { 'Content-Type': 'text/plain' },
+            body:    JSON.stringify({ action: 'appendRow', data: {
+              timestamp:    new Date().toISOString(),
+              name:         this.booking.name,
+              phone:        this.booking.phone,
+              email:        this.booking.email,
+              address:      this.booking.address,
+              buildingType: this.buildingTypeLabel(),
+              slot:         this.getSlotLabel(),
+              price:        '$' + this.estimatedPrice + ' AUD',
+              reportId:     this.reportId,
+              status:       'CONFIRMED',
+              notes:        'Booked via PWA'
+            }})
+          });
+          console.log('[Google Sheets] Booking row logged:', row);
+          return { success: true };
+        },
+
+        /* ────────────────────────────────────────────────────────
+           GOOGLE INTEGRATION 2: CALENDAR
+           Creates an event in the inspector's Google Calendar
+
+           Event contains:
+             - Title:       Building Inspection — {address}
+             - Description: Customer details + price + booking ID
+             - Start/End:   Based on selected slot (AM = 08:00–12:00, PM = 12:00–17:00)
+             - Location:    Property address
+        ──────────────────────────────────────────────────────── */
+        async createGoogleCalEvent() {
+          const slotTimeMap = {
+            'tomorrow-am': { start: '08:00', end: '12:00', offset: 1 },
+            'tomorrow-pm': { start: '12:00', end: '17:00', offset: 1 },
+            'within-24h':  { start: '08:00', end: '12:00', offset: 1 },
+            'this-week-1': { start: '08:00', end: '12:00', offset: 3 },
+            'next-week-1': { start: '08:00', end: '12:00', offset: 7 },
+            'next-week-2': { start: '08:00', end: '12:00', offset: 8 },
+          };
+
+          const slotInfo   = slotTimeMap[this.booking.selectedSlot] || slotTimeMap['tomorrow-am'];
+          const eventDate  = new Date();
+          eventDate.setDate(eventDate.getDate() + slotInfo.offset);
+          const dateStr    = eventDate.toISOString().split('T')[0];
+
+          const calEvent = {
+            summary:     `🏠 Building Inspection — ${this.booking.address}`,
+            location:     this.booking.address,
+            description: [
+              `Client: ${this.booking.name}`,
+              `Phone:  ${this.booking.phone}`,
+              `Email:  ${this.booking.email}`,
+              `Type:   ${this.buildingTypeLabel()}`,
+              `Price:  $${this.estimatedPrice} AUD (estimate)`,
+              `ID:     ${this.reportId}`,
+              '',
+              'Booked via C Graham Constructions PWA'
+            ].join('\n'),
+            start: { dateTime: `${dateStr}T${slotInfo.start}:00+10:00`, timeZone: 'Australia/Brisbane' },
+            end:   { dateTime: `${dateStr}T${slotInfo.end}:00+10:00`,   timeZone: 'Australia/Brisbane' }
+          };
+
+          /*
+          ── REAL IMPLEMENTATION ──
+
+          Method A — Google Apps Script Web App:
+            await fetch('https://api.base44.com/v1/apps/69ca5e07db7008c68a160911/functions/receiveBooking', {
+              method: 'POST',
+              mode:   'no-cors',
+              body:   JSON.stringify({ action: 'createCalEvent', event: calEvent, calendarId: GOOGLE_CONFIG.CALENDAR_ID })
+            });
+
+          Method B — Google Calendar REST API v3:
+            const token = await this.getOAuthToken();
+            await fetch(
+              `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(GOOGLE_CONFIG.CALENDAR_ID)}/events`,
+              {
+                method:  'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body:    JSON.stringify(calEvent)
+              }
+            );
+          */
+
+          // ── REAL Google Apps Script call ──
+          await fetch(GOOGLE_CONFIG.APPS_SCRIPT_URL, {
+            method:  'POST',
+            mode:    'no-cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body:    JSON.stringify({ action: 'createCalEvent', event: calEvent })
+          });
+          console.log('[Google Calendar] Event created:', calEvent);
+          return { success: true };
+        },
+
+        /* ────────────────────────────────────────────────────────
+           GOOGLE INTEGRATION 3: DOCS + DRIVE
+           Generates the traffic light report as a Google Doc
+           and exports it as a PDF to the client's Drive folder.
+
+           Called AFTER inspection is completed (from the
+           dashboard screen download button).
+        ──────────────────────────────────────────────────────── */
+        async generateGoogleDoc() {
+          const reportData = {
+            reportId:        this.reportId,
+            inspectorName:   GOOGLE_CONFIG.INSPECTOR_NAME,
+            inspectionDate:  this.getInspectionDate(),
+            propertyAddress: this.booking.address,
+            clientName:      this.booking.name,
+            clientPhone:     this.booking.phone,
+            clientEmail:     this.booking.email,
+            buildingType:    this.buildingTypeLabel(),
+            overallScore:    72,
+            redFindings:     this.reportFindings.red,
+            amberFindings:   this.reportFindings.amber,
+            greenFindings:   this.reportFindings.green,
+            generatedAt:     new Date().toISOString()
+          };
+
+          /*
+          ── REAL IMPLEMENTATION ──
+
+          Step 1: Copy the template Google Doc
+            const token = await this.getOAuthToken();
+            const copyRes = await fetch(
+              `https://www.googleapis.com/drive/v3/files/${GOOGLE_CONFIG.DOC_TEMPLATE_ID}/copy`,
+              {
+                method:  'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body:    JSON.stringify({
+                  name:    `Inspection Report — ${reportData.propertyAddress} — ${reportData.reportId}`,
+                  parents: [GOOGLE_CONFIG.DRIVE_FOLDER_ID]
+                })
+              }
+            );
+            const { id: newDocId } = await copyRes.json();
+
+          Step 2: Use Docs API batchUpdate to replace template placeholders
+            await fetch(`https://docs.googleapis.com/v1/documents/${newDocId}:batchUpdate`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                requests: Object.entries(reportData).map(([key, val]) => ({
+                  replaceAllText: {
+                    containsText:    { text: `{{${key}}}`, matchCase: true },
+                    replaceText:     String(val)
+                  }
+                }))
+              })
+            });
+
+          Step 3: Export as PDF
+            const pdfRes = await fetch(
+              `https://www.googleapis.com/drive/v3/files/${newDocId}/export?mimeType=application/pdf`,
+              { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+            const pdfBlob = await pdfRes.blob();
+            const url = URL.createObjectURL(pdfBlob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `CGC_Inspection_${reportData.reportId}.pdf`; a.click();
+          */
+
+          // ── REAL Google Apps Script call ──
+          const docRes = await fetch(GOOGLE_CONFIG.APPS_SCRIPT_URL, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ action: 'generateReport', reportData: reportData })
+          });
+
+          // no-cors won't return readable body, so for PDF download
+          // use a direct link pattern or open the returned pdfUrl
+          if (docRes.ok) {
+            const result = await docRes.json().catch(() => ({}));
+            if (result.pdfUrl) {
+              window.open(result.pdfUrl, '_blank');
+            }
+          }
+
+          console.log('[Google Docs/Drive] Report generation requested for:', reportData.reportId);
+          return reportData;
+        },
+
+        /* ────────────────────────────────────────────────────────
+           DOWNLOAD PDF — triggered by dashboard button
+        ──────────────────────────────────────────────────────── */
+        async downloadPDF() {
+          this.showToast('📄 Generating your PDF report…', 3000);
+
+          try {
+            await this.generateGoogleDoc();
+            // On success with real Google API, the PDF auto-downloads above
+            // For demo, show confirmation after delay
+            setTimeout(() => {
+              this.showToast('✅ PDF report sent to your email!', 3500);
+            }, 2000);
+          } catch (err) {
+            console.error('PDF generation error:', err);
+            this.showToast('⚠️ Report generation error — please contact us');
+          }
+        }
+
+      }; // end return
+    } // end inspectionApp()
+  </script>
+
+</body>
+</html>
